@@ -2,6 +2,7 @@ package service
 
 import (
 	"graphql/graph/model"
+	"graphql/models"
 )
 
 type Service interface {
@@ -10,9 +11,9 @@ type Service interface {
 	FetchAllCompanies() ([]*model.Company, error)
 	FetchCompanyByID(cid string) (*model.Company, error)
 	CreateJob(nj model.NewJob) (*model.Job, error)
-	FetchAllJobs() ([]*model.Job, error)
-	FetchJobByCompanyID(cid string) ([]*model.Job, error)
-	FetchJobByID(jid string) (*model.Job, error)
+	FetchAllJobs() ([]*models.Job, error)
+	FetchJobByCompanyID(cid string) ([]*models.Job, error)
+	FetchJobByID(jid int) (*models.Job, error)
 }
 
 type Store struct {

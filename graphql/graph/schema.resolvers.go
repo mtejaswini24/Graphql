@@ -40,17 +40,56 @@ func (r *queryResolver) FetchCompanyByID(ctx context.Context, cid string) (*mode
 
 // FetchAllJobs is the resolver for the fetchAllJobs field.
 func (r *queryResolver) FetchAllJobs(ctx context.Context) ([]*model.Job, error) {
-	return r.S.FetchAllJobs()
+	jobs, _ := r.S.FetchAllJobs()
+	jobsResponse := make([]*model.Job, 0)
+	for _, v := range jobs {
+		jobsResponse = append(jobsResponse, &model.Job{
+			ID:       int(v.ID),
+			JobTitle: v.JobTitle,
+			Salary:   v.Salary,
+			Company: &model.Company{
+				ID:       int(v.Company.ID),
+				Name:     v.Company.Name,
+				Location: v.Company.Location,
+			},
+		})
+	}
+	return jobsResponse, nil
 }
 
 // FetchJobByID is the resolver for the fetchJobById field.
-func (r *queryResolver) FetchJobByID(ctx context.Context, jid string) (*model.Job, error) {
-	return r.S.FetchJobByID(jid)
+func (r *queryResolver) FetchJobByID(ctx context.Context, jid int) (*model.Job, error) {
+	job, _ := r.S.FetchJobByID(jid)
+	jobResponse := &model.Job{
+		ID:       int(job.ID),
+		JobTitle: job.JobTitle,
+		Salary:   job.Salary,
+		Company: &model.Company{
+			ID:       int(job.Company.ID),
+			Name:     job.Company.Name,
+			Location: job.Company.Location,
+		},
+	}
+	return jobResponse, nil
 }
 
 // FetchJobByCompanyID is the resolver for the fetchJobByCompanyId field.
 func (r *queryResolver) FetchJobByCompanyID(ctx context.Context, cid string) ([]*model.Job, error) {
-	return r.S.FetchJobByCompanyID(cid)
+	jobs, _ := r.S.FetchJobByCompanyID(cid)
+	jobsResponse := make([]*model.Job, 0)
+	for _, v := range jobs {
+		jobsResponse = append(jobsResponse, &model.Job{
+			ID:       int(v.ID),
+			JobTitle: v.JobTitle,
+			Salary:   v.Salary,
+			Company: &model.Company{
+				ID:       int(v.Company.ID),
+				Name:     v.Company.Name,
+				Location: v.Company.Location,
+			},
+		})
+	}
+	return jobsResponse, nil
 }
 
 // Mutation returns MutationResolver implementation.

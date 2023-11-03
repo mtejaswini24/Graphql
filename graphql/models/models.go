@@ -15,8 +15,8 @@ type Company struct {
 }
 type Job struct {
 	gorm.Model
-	Cid      string  `json:"cid"`
 	Company  Company `json:"-" gorm:"ForeignKey:cid"`
+	Cid      string  `json:"cid"`
 	JobTitle string  `json:"jobTitle" validate:"required"`
 	Salary   string  `json:"salary" validate:"required"`
 }

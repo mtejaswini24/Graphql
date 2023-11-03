@@ -18,7 +18,7 @@ input NewCompany{
   location:String!
 }
 type Company{
-  id:ID!
+  id:Int!
   name:String!
   location:String!
 }
@@ -28,10 +28,10 @@ input NewJob{
   salary:String!
 }
 type Job{
-  jid:ID!
+  id:Int!
   jobTitle:String!
   salary:String!
-  company:Company
+  company:Company!
 }
 
 type Mutation {
@@ -39,10 +39,11 @@ type Mutation {
   createCompany(input:NewCompany!):Company!
   createJob(input:NewJob!):Job!
 }
+
 type Query {
   fetchAllCompanies: [Company]!
   fetchCompanyById(cid:ID!):Company!
   fetchAllJobs: [Job]!
-  fetchJobById(jid:ID!):Job!
+  fetchJobById(jid:Int!):Job!
   fetchJobByCompanyId(cid:ID!):[Job]!
 }

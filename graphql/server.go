@@ -38,6 +38,7 @@ func main() {
 	ms, err := service.NewService(db)
 	if err != nil {
 		fmt.Errorf("initalizing connection failed")
+		return
 	}
 	srConn := service.NewStore(ms)
 	port := os.Getenv("PORT")

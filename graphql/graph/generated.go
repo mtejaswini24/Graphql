@@ -55,7 +55,7 @@ type ComplexityRoot struct {
 
 	Job struct {
 		Company  func(childComplexity int) int
-		Jid      func(childComplexity int) int
+		ID       func(childComplexity int) int
 		JobTitle func(childComplexity int) int
 		Salary   func(childComplexity int) int
 	}
@@ -71,7 +71,7 @@ type ComplexityRoot struct {
 		FetchAllJobs        func(childComplexity int) int
 		FetchCompanyByID    func(childComplexity int, cid string) int
 		FetchJobByCompanyID func(childComplexity int, cid string) int
-		FetchJobByID        func(childComplexity int, jid string) int
+		FetchJobByID        func(childComplexity int, jid int) int
 	}
 
 	User struct {
@@ -90,7 +90,7 @@ type QueryResolver interface {
 	FetchAllCompanies(ctx context.Context) ([]*model.Company, error)
 	FetchCompanyByID(ctx context.Context, cid string) (*model.Company, error)
 	FetchAllJobs(ctx context.Context) ([]*model.Job, error)
-	FetchJobByID(ctx context.Context, jid string) (*model.Job, error)
+	FetchJobByID(ctx context.Context, jid int) (*model.Job, error)
 	FetchJobByCompanyID(ctx context.Context, cid string) ([]*model.Job, error)
 }
 
@@ -141,12 +141,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Job.Company(childComplexity), true
 
-	case "Job.jid":
-		if e.complexity.Job.Jid == nil {
+	case "Job.id":
+		if e.complexity.Job.ID == nil {
 			break
 		}
 
-		return e.complexity.Job.Jid(childComplexity), true
+		return e.complexity.Job.ID(childComplexity), true
 
 	case "Job.jobTitle":
 		if e.complexity.Job.JobTitle == nil {
@@ -246,7 +246,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.FetchJobByID(childComplexity, args["jid"].(string)), true
+		return e.complexity.Query.FetchJobByID(childComplexity, args["jid"].(int)), true
 
 	case "User.email":
 		if e.complexity.User.Email == nil {
@@ -489,10 +489,10 @@ func (ec *executionContext) field_Query_fetchJobByCompanyId_args(ctx context.Con
 func (ec *executionContext) field_Query_fetchJobById_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
+	var arg0 int
 	if tmp, ok := rawArgs["jid"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("jid"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -565,9 +565,9 @@ func (ec *executionContext) _Company_id(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Company_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -577,7 +577,7 @@ func (ec *executionContext) fieldContext_Company_id(ctx context.Context, field g
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -671,8 +671,8 @@ func (ec *executionContext) fieldContext_Company_location(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _Job_jid(ctx context.Context, field graphql.CollectedField, obj *model.Job) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Job_jid(ctx, field)
+func (ec *executionContext) _Job_id(ctx context.Context, field graphql.CollectedField, obj *model.Job) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Job_id(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -685,7 +685,7 @@ func (ec *executionContext) _Job_jid(ctx context.Context, field graphql.Collecte
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Jid, nil
+		return obj.ID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -697,19 +697,19 @@ func (ec *executionContext) _Job_jid(ctx context.Context, field graphql.Collecte
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Job_jid(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Job_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Job",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -824,11 +824,14 @@ func (ec *executionContext) _Job_company(ctx context.Context, field graphql.Coll
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*model.Company)
 	fc.Result = res
-	return ec.marshalOCompany2ᚖgraphqlᚋgraphᚋmodelᚐCompany(ctx, field.Selections, res)
+	return ec.marshalNCompany2ᚖgraphqlᚋgraphᚋmodelᚐCompany(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Job_company(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1017,8 +1020,8 @@ func (ec *executionContext) fieldContext_Mutation_createJob(ctx context.Context,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "jid":
-				return ec.fieldContext_Job_jid(ctx, field)
+			case "id":
+				return ec.fieldContext_Job_id(ctx, field)
 			case "jobTitle":
 				return ec.fieldContext_Job_jobTitle(ctx, field)
 			case "salary":
@@ -1197,8 +1200,8 @@ func (ec *executionContext) fieldContext_Query_fetchAllJobs(ctx context.Context,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "jid":
-				return ec.fieldContext_Job_jid(ctx, field)
+			case "id":
+				return ec.fieldContext_Job_id(ctx, field)
 			case "jobTitle":
 				return ec.fieldContext_Job_jobTitle(ctx, field)
 			case "salary":
@@ -1226,7 +1229,7 @@ func (ec *executionContext) _Query_fetchJobById(ctx context.Context, field graph
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().FetchJobByID(rctx, fc.Args["jid"].(string))
+		return ec.resolvers.Query().FetchJobByID(rctx, fc.Args["jid"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1251,8 +1254,8 @@ func (ec *executionContext) fieldContext_Query_fetchJobById(ctx context.Context,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "jid":
-				return ec.fieldContext_Job_jid(ctx, field)
+			case "id":
+				return ec.fieldContext_Job_id(ctx, field)
 			case "jobTitle":
 				return ec.fieldContext_Job_jobTitle(ctx, field)
 			case "salary":
@@ -1316,8 +1319,8 @@ func (ec *executionContext) fieldContext_Query_fetchJobByCompanyId(ctx context.C
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "jid":
-				return ec.fieldContext_Job_jid(ctx, field)
+			case "id":
+				return ec.fieldContext_Job_id(ctx, field)
 			case "jobTitle":
 				return ec.fieldContext_Job_jobTitle(ctx, field)
 			case "salary":
@@ -3576,8 +3579,8 @@ func (ec *executionContext) _Job(ctx context.Context, sel ast.SelectionSet, obj 
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Job")
-		case "jid":
-			out.Values[i] = ec._Job_jid(ctx, field, obj)
+		case "id":
+			out.Values[i] = ec._Job_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -3593,6 +3596,9 @@ func (ec *executionContext) _Job(ctx context.Context, sel ast.SelectionSet, obj 
 			}
 		case "company":
 			out.Values[i] = ec._Job_company(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4288,6 +4294,21 @@ func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface
 
 func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
 	res := graphql.MarshalID(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")

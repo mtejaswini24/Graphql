@@ -4,7 +4,6 @@ import (
 	"errors"
 	"graphql/graph/model"
 	"graphql/models"
-	"strconv"
 
 	"github.com/rs/zerolog/log"
 )
@@ -25,9 +24,8 @@ func (s *Conn) CreateJob(nj model.NewJob) (*model.Job, error) {
 		log.Error().Err(err).Msg("not getting company details")
 		return nil, errors.New("job creation failed")
 	}
-	jid := strconv.FormatUint(uint64(j.ID), 10)
 	j1 := model.Job{
-		Jid:      jid,
+		ID:       int(j.ID),
 		JobTitle: j.JobTitle,
 		Salary:   j.Salary,
 		Company:  company,
@@ -36,27 +34,28 @@ func (s *Conn) CreateJob(nj model.NewJob) (*model.Job, error) {
 	// Successfully created the record, return the user.
 	return &j1, nil
 }
-func (s *Conn) FetchAllJobs() ([]*model.Job, error) {
-	var jobDetails []*model.Job
-	result := s.db.Find(&jobDetails)
+func (s *Conn) FetchAllJobs() ([]*models.Job, error) {
+	var jobDetails []*models.Job
+	result := s.db.Preload("Company").Find(&jobDetails)
 	if result.Error != nil {
 		log.Info().Err(result.Error).Send()
 		return nil, errors.New("job details are not there")
 	}
 	return jobDetails, nil
 }
-func (s *Conn) FetchJobByCompanyID(cid string) ([]*model.Job, error) {
-	var jobDetails []*model.Job
-	result := s.db.Where("id=?", cid).Find(&jobDetails)
+func (s *Conn) FetchJobByCompanyID(cid string) ([]*models.Job, error) {
+	var jobDetails []*models.Job
+
+	result := s.db.Preload("Company").Where("cid=?", cid).Find(&jobDetails)
 	if result.Error != nil {
 		log.Info().Err(result.Error).Send()
 		return nil, errors.New("job is not there with that company id")
 	}
 	return jobDetails, nil
 }
-func (s *Conn) FetchJobByID(jid string) (*model.Job, error) {
-	var jobById model.Job
-	result := s.db.Where("jid=?", jid).First(&jobById)
+func (s *Conn) FetchJobByID(jid int) (*models.Job, error) {
+	var jobById models.Job
+	result := s.db.Preload("Company").Where("id=?", jid).First(&jobById)
 	if result.Error != nil {
 		log.Info().Err(result.Error).Send()
 		return nil, errors.New("job is not there with that id")

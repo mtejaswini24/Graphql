@@ -4,7 +4,6 @@ import (
 	"errors"
 	"graphql/graph/model"
 	"graphql/models"
-	"strconv"
 
 	"github.com/rs/zerolog/log"
 )
@@ -19,9 +18,8 @@ func (s *Conn) CreateCompany(nc model.NewCompany) (*model.Company, error) {
 	if err != nil {
 		return &model.Company{}, err
 	}
-	cid := strconv.FormatUint(uint64(c.ID), 10)
 	c1 := model.Company{
-		ID:       cid,
+		ID:       int(c.ID),
 		Name:     c.Name,
 		Location: c.Location,
 	}
